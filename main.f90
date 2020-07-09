@@ -15,6 +15,7 @@ module global_variables
 ! Grids
   integer :: NK1,NK2,NK3,NK
   real(8) :: a_Cvec(3,3),b_Cvec(3,3), Vcell
+  real(8),allocatable :: k_Cvec(:,:)
 
 end module global_variables
 !-------------------------------------------------------------------------------
@@ -71,9 +72,40 @@ subroutine init_lattice
                         ,sum(a_Cvec(:,3)*b_Cvec(:,2))/(2d0*pi) &
                         ,sum(a_Cvec(:,3)*b_Cvec(:,3))/(2d0*pi)
 
+  call set_k_Cvec_dense_pack
 
 end subroutine init_lattice
 !-------------------------------------------------------------------------------
+subroutine set_k_Cvec_dense_pack
+  use global_variables
+  implicit none
+  integer :: i,j,k,l
+  real(8) :: x1, x2, x3
+
+  nk1 = 64
+  nk2 = 64
+  nk3 = 64
+  nk = nk1*nk2*nk3
+
+  allocate(k_Cvec(3,nk))
+
+  l = 0
+  do k = 0, nk3-1
+    x3 = (dble(k)+0.5d0)/dble(nk3)-0.5d0
+    do j = 0, nk2-1
+      x2 = (dble(j)+0.5d0)/dble(nk2)-0.5d0
+      do i = 0, nk2-1
+        x1 = (dble(i)+0.5d0)/dble(nk1)-0.5d0
+        l = l +1
+
+        k_Cvec(:,l) = x1*b_Cvec(:,1) + x2*b_Cvec(:,2) + x3*b_Cvec(:,3)
+      end do
+    end do
+  end do
+        
+end subroutine set_k_Cvec_dense_pack
+
+
 !-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
